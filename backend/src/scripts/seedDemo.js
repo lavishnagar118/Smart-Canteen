@@ -7,9 +7,23 @@ const Canteen = require("../models/Canteen");
 const MenuItem = require("../models/MenuItem");
 const User = require("../models/User");
 
-async function seedDemo() {
-  const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-canteen";
-  console.log("Connecting to MongoDB:", uri);
+function maskMongoUri(rawUri) {
+  if (!rawUri) return "";
+  return rawUri.replace(/\/\/(.*?):(.*?)@/, "//$1:****@");
+}
+
+async function seedDemo(customUri) {
+  const args = process.argv.slice(2);
+  const cliUriArg = args.find((a) => a.startsWith("--uri="))?.split("=")[1];
+  const uri =
+    customUri ||
+    cliUriArg ||
+    process.env.TARGET_MONGODB_URI ||
+    process.env.ATLAS_MONGODB_URI ||
+    process.env.MONGODB_URI ||
+    "mongodb://127.0.0.1:27017/smart-canteen";
+
+  console.log("Connecting to MongoDB:", maskMongoUri(uri));
   await mongoose.connect(uri);
 
   try {
