@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  color: #243038;
+  background: #f7f8f6;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #f7f8f6;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(22, 124, 111, 0.3);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .touch-target {
+    @apply min-h-11 min-w-11;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-10;
+  }
+
+  .button-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400;
+  }
+
+  .button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-teal-200 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .field {
+    @apply mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-600;
+  }
+
+  .surface {
+    @apply rounded-3xl border border-slate-200/80 bg-white shadow-[0_12px_35px_rgba(36,48,56,0.06)];
+  }
+
+  .eyebrow {
+    @apply text-xs font-black uppercase tracking-[0.16em] text-teal-700;
+  }
+
+  .section-title {
+    @apply text-2xl font-black tracking-tight text-slate-900 sm:text-3xl;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-black;
+  }
+
+  .admin-shell { @apply bg-slate-100 text-slate-800; }
+  .admin-sidebar { @apply relative flex flex-col bg-slate-950 p-5 text-white; }
+  .admin-sidebar-footer { @apply absolute bottom-5 left-5 right-5 border-t border-white/10 pt-4 text-xs text-slate-500; }
+  .admin-connection { @apply mb-2 flex items-center gap-2 font-bold text-slate-300; }
+  .brand-mark { @apply flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500 text-slate-950; }
+  .admin-header { @apply flex min-h-20 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6 lg:px-8; }
+  .admin-main { @apply p-4 pb-12 sm:p-6 lg:p-8; }
+  .admin-kicker { @apply text-[11px] font-black uppercase tracking-[0.16em] text-cyan-700; }
+  .admin-title { @apply mt-1 text-3xl font-black tracking-tight text-slate-950; }
+  .admin-subtitle { @apply mt-2 max-w-2xl text-sm font-medium text-slate-500; }
+  .admin-page-heading { @apply mb-6 flex flex-wrap items-end justify-between gap-4; }
+  .admin-nav-link { @apply flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-slate-400 transition hover:bg-white/10 hover:text-white; }
+  .admin-nav-link-active { @apply bg-cyan-500 text-slate-950 hover:bg-cyan-400 hover:text-slate-950; }
+  .icon-button { @apply inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl transition hover:bg-slate-100; }
+  .admin-panel { @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]; }
+  .panel-heading { @apply mb-4 flex items-center justify-between gap-3; }
+  .panel-title { @apply mt-1 text-lg font-black text-slate-950; }
+  .kpi-card { @apply rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)]; }
+  .kpi-label { @apply text-sm font-bold text-slate-500; }
+  .kpi-value { @apply mt-3 text-3xl font-black tracking-tight text-slate-950; }
+  .kpi-icon { @apply flex h-10 w-10 items-center justify-center rounded-xl; }
+  .kpi-blue { @apply bg-blue-50 text-blue-700; } .kpi-amber { @apply bg-amber-50 text-amber-700; } .kpi-violet { @apply bg-violet-50 text-violet-700; } .kpi-emerald { @apply bg-emerald-50 text-emerald-700; } .kpi-slate { @apply bg-slate-100 text-slate-600; } .kpi-cyan { @apply bg-cyan-50 text-cyan-700; }
+  .queue-summary { @apply rounded-xl bg-slate-50 p-4; }
+  .queue-count { @apply text-5xl font-black tracking-tight text-slate-950; }
+  .filter-strip { @apply mb-4 flex items-center gap-2 text-xs font-bold text-slate-500; }
+  .admin-table-wrap { @apply overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]; }
+  .admin-table { @apply w-full text-left text-sm; }
+  .admin-table th { @apply whitespace-nowrap border-b border-slate-200 px-4 py-4 text-xs font-black uppercase tracking-wide text-slate-500; }
+  .admin-table td { @apply border-b border-slate-100 px-4 py-4 text-slate-700 last:border-0; }
+  .action-button { @apply inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white transition hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-50; }
+  .queue-row { @apply grid gap-4 rounded-2xl border-l-4 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center; }
+  .queue-row-confirmed { @apply border-amber-400; } .queue-row-accepted { @apply border-blue-400; } .queue-row-preparing { @apply border-violet-500; } .queue-row-ready { @apply border-emerald-500 bg-emerald-50/40; }
+  .queue-position { @apply flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-lg font-black text-slate-950; }
+  .status-neutral { @apply bg-slate-100 text-slate-600; }
+  .status-confirmed { @apply bg-amber-100 text-amber-800; } .status-accepted { @apply bg-blue-100 text-blue-800; } .status-preparing { @apply bg-violet-100 text-violet-800; } .status-ready { @apply bg-emerald-100 text-emerald-800; } .status-completed { @apply bg-slate-100 text-slate-600; } .status-pending_payment { @apply bg-orange-100 text-orange-800; }
+  .qr-panel { @apply rounded-2xl border border-cyan-100 bg-cyan-50 p-5 text-center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

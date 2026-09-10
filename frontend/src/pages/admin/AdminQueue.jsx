@@ -1,0 +1,15 @@
+import { useCallback, useEffect, useState } from "react";
+import { getQueue, updateQueueOrder } from "../../services/queueService";
+import { subscribeSocket, joinOrderRoom } from "../../services/socket";
+import AdminPageState from "../../components/admin/AdminPageState";
+
+const actionFor = { CONFIRMED: ["accept", "Accept Order"], ACCEPTED: ["start", "Start Preparing"], PREPARING: ["ready", "Mark Ready"], READY: ["complete", "Complete Order"] };
+
+export default function AdminQueue() {
+  const [queue, setQueue] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [action, setAction] = useState("");
+  const load = useCallback(async () => { setLoading(true); setError(""); try { const response = await getQueue(); setQueue((response.data.data?.queue || []).sort((a, b) => (a.position || a.queuePosition || 999) - (b.position || b.queuePosition || 999))); } catch (requestError) { setError(requestError.message); } finally { setLoading(false); } }, []);
+  useEffect(() => { load(); const unsubscribers = ["ORDER_STATUS_UPDATED", "QUEUE_UPDATED", "WAIT_TIME_UPDATED"].map((event) => subscribeSocket(event, load)); return () => unsubscribers.forEach((unsubscribe) => unsubscribe()); }, [load]);
+  useEffect(() => { queue.forEach((entry) => joinOrderRoom(entry.orderId)); }, [queue]);
+  const transition = async (orderId, transitionAction) => { setAction(`${orderId}:${transitionAction}`); try { await updateQueueOrder(orderId, transitionAction); await load(); } catch (requestError) { setError(requestError.message); } finally { setAction(""); } };
+  return <div><div className="admin-page-heading"><div><p className="admin-kicker">Kitchen control</p><h2 className="admin-title">Live queue</h2><p className="admin-subtitle">Prioritize the next handoff with the live kitchen queue.</p></div></div><AdminPageState loading={loading} error={error} empty={!queue.length} onRetry={load}><div className="space-y-3">{queue.map((entry) => { const order = entry.order || {}; const id = entry.orderId; const state = order.status || (entry.status === "WAITING" ? "CONFIRMED" : entry.status); const config = actionFor[state]; return <div key={id} className={`queue-row queue-row-${state.toLowerCase()}`}><div className="queue-position">#{entry.queuePosition || entry.position || "-"}</div><div className="min-w-0"><p className="font-black text-slate-950">Order #{String(id).slice(-6)}</p><p className="mt-1 truncate text-sm text-slate-500">{(order.items || []).map((item) => `${item.name} x${item.quantity}`).join(", ") || "Order items unavailable"}</p><p className="mt-2 text-xs font-semibold text-slate-400">{order.user?.name || order.user?.email || "Customer"}</p></div><div><span className={`status-badge status-${state.toLowerCase()}`}>{state.replace("_", " ")}</span><p className="mt-2 text-sm font-bold text-slate-700">{entry.estimatedWaitTime ?? "—"} min wait</p></div>{config && <button disabled={action === `${id}:${config[0]}`} onClick={() => transition(id, config[0])} className="action-button">{action === `${id}:${config[0]}` ? "Updating..." : config[1]}</button>}</div>; })}</div></AdminPageState></div>;
+}
