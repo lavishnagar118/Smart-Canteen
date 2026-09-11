@@ -75,6 +75,7 @@ export default function AdminAIAssistant({ isOpen, onClose, initialCanteenId = "
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const inFlightRef = useRef(false);
 
   // 1. Role isolation: Strictly for ADMIN only
   const isAdmin = user && user.role === "ADMIN";
@@ -153,7 +154,8 @@ export default function AdminAIAssistant({ isOpen, onClose, initialCanteenId = "
   // Send message
   const handleSend = async (queryText = null) => {
     const textToSend = (typeof queryText === "string" ? queryText : input).trim();
-    if (!textToSend || isLoading) return;
+    if (!textToSend || isLoading || inFlightRef.current) return;
+    inFlightRef.current = true;
 
     const userMsgId = `admin-user-${Date.now()}`;
     const newMessages = [
@@ -225,6 +227,7 @@ export default function AdminAIAssistant({ isOpen, onClose, initialCanteenId = "
       ]);
     } finally {
       setIsLoading(false);
+      inFlightRef.current = false;
     }
   };
 

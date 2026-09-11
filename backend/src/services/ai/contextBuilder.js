@@ -41,7 +41,9 @@ const buildCustomerContext = async (canteenId = null) => {
       price: item.price,
       category: item.category,
       prepMinutes: item.preparationTime,
-      description: item.description || "",
+      ...(item.description && item.description.trim()
+        ? { description: item.description.trim().slice(0, 80) }
+        : {}),
     })),
   };
 };

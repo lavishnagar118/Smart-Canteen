@@ -212,6 +212,219 @@ test("GeminiClient: handles API errors safely without leaking credentials", asyn
   assert.equal(result.error.includes(fakeSecretKey), false, "API key must NEVER be in error message");
 });
 
+test("GeminiClient: 429 RESOURCE_EXHAUSTED retries and succeeds", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        if (callCount === 1) {
+          const error = new Error("Resource has been exhausted (rate limit)");
+          error.status = 429;
+          throw error;
+        }
+        return { text: JSON.stringify({ reply: "success after 429" }) };
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+    sleep: async () => {},
+  });
+
+  const result = await client.generateChat({
+    messages: [{ role: "user", content: "test" }],
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(callCount, 2);
+  assert.equal(result.data.reply, "success after 429");
+});
+
+test("GeminiClient: 503 UNAVAILABLE retries and succeeds", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        if (callCount === 1) {
+          const error = new Error("The service is currently unavailable");
+          error.status = 503;
+          throw error;
+        }
+        return { text: JSON.stringify({ reply: "success after 503" }) };
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+    sleep: async () => {},
+  });
+
+  const result = await client.generateChat({
+    messages: [{ role: "user", content: "test" }],
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(callCount, 2);
+  assert.equal(result.data.reply, "success after 503");
+});
+
+test("GeminiClient: 429 retries exhausted returns graceful fallback", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        const error = new Error("Resource has been exhausted");
+        error.status = 429;
+        throw error;
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+    maxRetries: 2,
+    sleep: async () => {},
+  });
+
+  const result = await client.generateChat({
+    messages: [{ role: "user", content: "test" }],
+  });
+
+  assert.equal(result.success, false);
+  assert.equal(result.isFallback, true);
+  assert.equal(result.error, "Gemini request failed");
+  assert.equal(callCount, 3); // 1 initial + 2 retries
+});
+
+test("GeminiClient: 400 INVALID_ARGUMENT triggers immediate fallback with NO retry", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        const error = new Error("Invalid value at systemInstruction.role");
+        error.status = 400;
+        throw error;
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+    maxRetries: 2,
+    sleep: async () => {},
+  });
+
+  const result = await client.generateChat({
+    messages: [{ role: "user", content: "test" }],
+  });
+
+  assert.equal(result.success, false);
+  assert.equal(result.isFallback, true);
+  assert.equal(result.error, "Gemini request failed");
+  assert.equal(callCount, 1, "Must NOT retry 400 INVALID_ARGUMENT");
+});
+
+test("GeminiClient: 404 NOT_FOUND triggers immediate fallback with NO retry", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        const error = new Error("models/gemini-2.5-flash-lite is no longer available");
+        error.status = 404;
+        throw error;
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+    maxRetries: 2,
+    sleep: async () => {},
+  });
+
+  const result = await client.generateChat({
+    messages: [{ role: "user", content: "test" }],
+  });
+
+  assert.equal(result.success, false);
+  assert.equal(result.isFallback, true);
+  assert.equal(result.error, "Gemini request failed");
+  assert.equal(callCount, 1, "Must NOT retry 404 NOT_FOUND");
+});
+
+test("GeminiClient: timeout error retries and succeeds", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        if (callCount === 1) {
+          const timeoutErr = new Error("Request timed out");
+          timeoutErr.name = "TimeoutError";
+          throw timeoutErr;
+        }
+        return { text: JSON.stringify({ reply: "success after timeout" }) };
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+    sleep: async () => {},
+  });
+
+  const result = await client.generateChat({
+    messages: [{ role: "user", content: "test" }],
+  });
+
+  assert.equal(result.success, true);
+  assert.equal(callCount, 2);
+  assert.equal(result.data.reply, "success after timeout");
+});
+
+test("GeminiClient: in-flight duplicate requests are deduplicated into single call", async () => {
+  let callCount = 0;
+  const mockAiClient = {
+    models: {
+      generateContent: async () => {
+        callCount++;
+        // Simulate in-flight async latency
+        await new Promise((r) => setTimeout(r, 20));
+        return { text: JSON.stringify({ reply: "deduplicated result" }) };
+      },
+    },
+  };
+
+  const client = new GeminiClient({
+    apiKey: "test-key",
+    client: mockAiClient,
+  });
+
+  const [res1, res2] = await Promise.all([
+    client.generateChat({ messages: [{ role: "user", content: "same query" }] }),
+    client.generateChat({ messages: [{ role: "user", content: "same query" }] }),
+  ]);
+
+  assert.equal(res1.success, true);
+  assert.equal(res2.success, true);
+  assert.equal(res1.data.reply, "deduplicated result");
+  assert.equal(res2.data.reply, "deduplicated result");
+  assert.equal(callCount, 1, "Concurrent identical queries must only call Gemini API once");
+});
+
 test("GeminiClient: health check reports ready when model is accessible", async () => {
   const mockAiClient = {
     models: {

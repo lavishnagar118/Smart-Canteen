@@ -64,6 +64,7 @@ export default function StaffAIAssistant({ isOpen, onClose }) {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const inFlightRef = useRef(false);
 
   // 1. Role isolation: Strictly for STAFF and ADMIN only
   const isAuthorized = user && (user.role === "STAFF" || user.role === "ADMIN");
@@ -129,7 +130,8 @@ export default function StaffAIAssistant({ isOpen, onClose }) {
   // Send message
   const handleSend = async (queryText = null) => {
     const textToSend = (typeof queryText === "string" ? queryText : input).trim();
-    if (!textToSend || isLoading) return;
+    if (!textToSend || isLoading || inFlightRef.current) return;
+    inFlightRef.current = true;
 
     const userMsgId = `staff-user-${Date.now()}`;
     const newMessages = [
@@ -200,6 +202,7 @@ export default function StaffAIAssistant({ isOpen, onClose }) {
       ]);
     } finally {
       setIsLoading(false);
+      inFlightRef.current = false;
     }
   };
 

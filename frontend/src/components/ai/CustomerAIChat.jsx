@@ -64,6 +64,7 @@ export default function CustomerAIChat() {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const inFlightRef = useRef(false);
 
   const pathname = location.pathname;
   const isAllowedPath =
@@ -182,9 +183,11 @@ export default function CustomerAIChat() {
   // Send message
   const handleSend = async (queryText = null) => {
     const textToSend = (typeof queryText === "string" ? queryText : input).trim();
-    if (!textToSend || isLoading) return;
+    if (!textToSend || isLoading || inFlightRef.current) return;
+    inFlightRef.current = true;
 
     if (!isAuthenticated) {
+      inFlightRef.current = false;
       setMessages((prev) => [
         ...prev,
         {
@@ -207,6 +210,7 @@ export default function CustomerAIChat() {
     }
 
     if (!selectedCanteenId) {
+      inFlightRef.current = false;
       setMessages((prev) => [
         ...prev,
         {
@@ -304,6 +308,7 @@ export default function CustomerAIChat() {
       ]);
     } finally {
       setIsLoading(false);
+      inFlightRef.current = false;
     }
   };
 
