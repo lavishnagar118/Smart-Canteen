@@ -26,7 +26,7 @@ const reportAiConfiguration = () => {
   const aiProvider = require("./src/services/ai/aiProvider");
   const provider = aiProvider.getActiveProviderName();
   if (provider === "gemini") {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+    const model = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
     const hasKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim());
     console.log(
       `AI configuration: Provider=Gemini, Model=${model}, KeyConfigured=${hasKey ? "YES" : "NO"}`

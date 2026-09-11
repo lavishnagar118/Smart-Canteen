@@ -215,7 +215,7 @@ test("GeminiClient: handles API errors safely without leaking credentials", asyn
 test("GeminiClient: health check reports ready when model is accessible", async () => {
   const mockAiClient = {
     models: {
-      get: async () => ({ name: "models/gemini-2.5-flash-lite" }),
+      get: async () => ({ name: "models/gemini-3.5-flash-lite" }),
     },
   };
 
@@ -228,7 +228,7 @@ test("GeminiClient: health check reports ready when model is accessible", async 
   assert.equal(status.available, true);
   assert.equal(status.modelPresent, true);
   assert.equal(status.provider, "gemini");
-  assert.equal(status.defaultModel, "gemini-2.5-flash-lite");
+  assert.equal(status.defaultModel, "gemini-3.5-flash-lite");
 });
 
 test("Customer AI works through Gemini provider in production mode", async () => {
