@@ -1,7 +1,7 @@
 const { customerAssistant } = require("../services/ai/customerAssistant");
 const { staffAssistant } = require("../services/ai/staffAssistant");
 const { adminAssistant } = require("../services/ai/adminAssistant");
-const ollamaClient = require("../services/ai/ollamaClient");
+const aiProvider = require("../services/ai/aiProvider");
 
 const customerChat = async (req, res, next) => {
   try {
@@ -56,7 +56,7 @@ const adminChat = async (req, res, next) => {
 
 const health = async (req, res, next) => {
   try {
-    const status = await ollamaClient.checkHealth();
+    const status = await aiProvider.checkHealth();
     res.status(200).json({
       success: true,
       message: "AI runtime health status",

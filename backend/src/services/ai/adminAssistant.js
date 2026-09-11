@@ -1,4 +1,4 @@
-const ollamaClient = require("./ollamaClient");
+const aiProvider = require("./aiProvider");
 const contextBuilder = require("./contextBuilder");
 const outputValidator = require("./outputValidator");
 const AppError = require("../../utils/AppError");
@@ -46,7 +46,7 @@ ${JSON.stringify(context)}`;
     { role: "user", content: cleanQuery },
   ];
 
-  const result = await ollamaClient.generateChat({
+  const result = await aiProvider.generateChat({
     messages,
     format: "json",
     temperature: 0.2,

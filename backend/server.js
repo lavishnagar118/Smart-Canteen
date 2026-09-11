@@ -22,9 +22,28 @@ const reportRazorpayConfiguration = () => {
   );
 };
 
+const reportAiConfiguration = () => {
+  const aiProvider = require("./src/services/ai/aiProvider");
+  const provider = aiProvider.getActiveProviderName();
+  if (provider === "gemini") {
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+    const hasKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim());
+    console.log(
+      `AI configuration: Provider=Gemini, Model=${model}, KeyConfigured=${hasKey ? "YES" : "NO"}`
+    );
+  } else {
+    const model = process.env.OLLAMA_MODEL || "qwen2.5:3b";
+    const host = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_HOST || "http://localhost:11434";
+    console.log(
+      `AI configuration: Provider=Ollama, Model=${model}, Host=${host}`
+    );
+  }
+};
+
 const startServer = async () => {
   try {
     reportRazorpayConfiguration();
+    reportAiConfiguration();
     await connectDatabase();
 
     const httpServer = http.createServer(app);
