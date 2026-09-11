@@ -132,7 +132,9 @@ class GeminiClient {
       };
 
       if (systemInstruction) {
-        config.systemInstruction = systemInstruction;
+        config.systemInstruction = {
+          parts: [{ text: systemInstruction }],
+        };
       }
 
       if (format === "json") {
@@ -181,7 +183,12 @@ class GeminiClient {
         ? "Gemini request timed out"
         : "Gemini request failed";
 
-      console.error(`[AI Provider: Gemini] ${safeErrorMessage}`);
+      let detailMsg = error.message || "";
+      if (key) {
+        detailMsg = detailMsg.split(key).join("[REDACTED]");
+      }
+      detailMsg = detailMsg.replace(/AIza[0-9A-Za-z-_]{35}/g, "[REDACTED]");
+      console.error(`[AI Provider: Gemini] ${safeErrorMessage}${detailMsg ? `: ${detailMsg}` : ""}`);
 
       return {
         success: false,
